@@ -1811,7 +1811,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   manaText: {fileID: 967495468}
   endTurnButton: {fileID: 1957648318}
-  maxMana: 10
+  maxMana: 5
   manaPerTurn: 1
 --- !u!1 &873200544
 GameObject:

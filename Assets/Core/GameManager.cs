@@ -10,10 +10,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text manaText;
     [SerializeField] private Button endTurnButton;
 
-    [SerializeField] private int maxMana = 10;
-    [SerializeField] private int manaPerTurn = 1;
+    [SerializeField] private int maxMana = 5;
 
-    private int currentMaxMana = 1;
     private int currentMana;
     private int turnCount = 1;
 
@@ -25,7 +23,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        currentMana = currentMaxMana;
+        // 1-й ход: мана 1/5
+        currentMana = Mathf.Min(turnCount, maxMana);
         UpdateManaUI();
 
         if (endTurnButton != null)
@@ -35,7 +34,7 @@ public class GameManager : MonoBehaviour
     }
 
     public int CurrentMana => currentMana;
-    public int CurrentMaxMana => currentMaxMana;
+    public int MaxMana => maxMana;
     public int TurnCount => turnCount;
 
     public bool CanAfford(int amount) => currentMana >= amount;
@@ -55,31 +54,28 @@ public class GameManager : MonoBehaviour
     {
         turnCount++;
 
-        // Увеличиваем лимит маны каждый ход вплоть до maxMana
-        if (currentMaxMana < maxMana)
-        {
-            currentMaxMana += manaPerTurn;
-        }
-
-        currentMana = currentMaxMana;
+        // Каждый ход мана восполняется согласно номеру хода: 1/5, 2/5, 3/5, 4/5, 5/5
+        // и не растет выше 5
+        currentMana = Mathf.Min(turnCount, maxMana);
         UpdateManaUI();
 
-        Debug.Log($"--- Ход {turnCount} начат! Мана восполнена: {currentMana}/{currentMaxMana} ---");
+        Debug.Log($"--- Ход {turnCount} начат! Мана: {currentMana}/{maxMana} ---");
 
-        // В Unity 6 вызов FindObjectsByType<Unit>() работает без параметров
-        foreach (var unit in FindObjectsByType<Unit>())
+        // Сбрасываем ход только для юнитов игрока
+        foreach (var unit in FindObjectsByType<Unit>(FindObjectsSortMode.None))
         {
-            unit.ResetTurn();
+            if (unit != null && unit.isPlayerUnit)
+            {
+                unit.ResetTurn();
+            }
         }
-
-        // Здесь в будущем вызываем логику хода ИИ / второго игрока или добор карт
     }
 
     private void UpdateManaUI()
     {
         if (manaText != null)
         {
-            manaText.text = $"Мана: {currentMana}/{currentMaxMana}";
+            manaText.text = $"Мана: {currentMana}/{maxMana}";
         }
     }
 }

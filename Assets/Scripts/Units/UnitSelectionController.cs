@@ -34,23 +34,44 @@ public class UnitSelectionController : MonoBehaviour
         if (hit != null)
         {
             Unit unit = hit.GetComponent<Unit>();
-            if (unit != null && !unit.hasMoved)
+            if (unit != null)
             {
-                selectedUnit = unit;
-                // Инициализируем стартовую позицию на сетке
-                selectedUnit.gridPosition = tilemap.WorldToCell(selectedUnit.transform.position);
-                Debug.Log($"Выбран юнит: {selectedUnit.unitName}");
-                return;
+                // Проверяем: игрок может управлять только СВОИМИ (синими) юнитами
+                if (!unit.isPlayerUnit)
+                {
+                    Debug.LogWarning($"[{unit.unitName}] — это вражеский красный юнит! Вы можете управлять только своими синими войсками.");
+                    return;
+                }
+
+                if (!unit.hasMoved)
+                {
+                    selectedUnit = unit;
+                    selectedUnit.gridPosition = tilemap.WorldToCell(selectedUnit.transform.position);
+                    Debug.Log($"Выбран игровой юнит: {selectedUnit.unitName}");
+                    return;
+                }
+                else
+                {
+                    Debug.Log($"[{unit.unitName}] уже походил в этом раунде.");
+                    return;
+                }
             }
         }
 
-        // 2. Перемещение юнита с проверкой дистанции
+        // 2. Перемещение выбранного юнита с проверкой дистанции
         if (selectedUnit != null)
         {
             Vector3Int targetCellPos = tilemap.WorldToCell(mouseWorldPos2D);
 
             if (tilemap.HasTile(targetCellPos))
             {
+                // Проверка: клетка не должна быть занята другим юнитом или базой
+                if (GridManager.Instance != null && GridManager.Instance.IsCellOccupied(targetCellPos))
+                {
+                    Debug.LogWarning($"Клетка {targetCellPos} уже занята!");
+                    return;
+                }
+
                 // Считаем расстояние по сетке (Манхэттенская дистанция для изометрии)
                 int distance = Mathf.Abs(targetCellPos.x - selectedUnit.gridPosition.x) +
                                Mathf.Abs(targetCellPos.y - selectedUnit.gridPosition.y);

@@ -8,6 +8,10 @@ public class Unit : MonoBehaviour
     public int moveDistance = 2; // Дальность хода в клетках
     public float moveSpeed = 5f;
 
+    [Header("Team & Control")]
+    public bool isPlayerUnit = true; // Синий юнит = true (игровой), Красный = false (неигровой)
+    public int teamId = 1;           // 1 = Player, 2 = Enemy
+
     [HideInInspector] public Vector3Int gridPosition; // Позиция на Tilemap
     [HideInInspector] public bool hasMoved = false;   // Ходил ли в этом ходу
 
@@ -16,6 +20,19 @@ public class Unit : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // Красный воин (WarriorPlayer1 в сцене или со спрайтом red) — вражеский неигровой
+        if (gameObject.name.Contains("Player1") || (spriteRenderer != null && spriteRenderer.sprite != null && spriteRenderer.sprite.name.Contains("red")))
+        {
+            isPlayerUnit = false;
+            teamId = 2;
+            unitName = "Enemy Warrior (Red)";
+        }
+        else
+        {
+            isPlayerUnit = true;
+            teamId = 1;
+        }
     }
 
     private void Start()
