@@ -8,6 +8,13 @@ public class CardFanLayout : MonoBehaviour
     [SerializeField] private float maxRotation = 12f;   // Поворот крайних карт
     [SerializeField] private float cardSpacing = 60f;   // Шаг/расстояние между картами
 
+    public static CardFanLayout Instance { get; private set; }
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     private void Update()
     {
         UpdateFanLayout();

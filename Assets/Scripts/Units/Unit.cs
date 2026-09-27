@@ -18,6 +18,14 @@ public class Unit : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
+    private void Start()
+    {
+        if (GridManager.Instance != null && gridPosition == Vector3Int.zero)
+        {
+            gridPosition = GridManager.Instance.WorldToCell(transform.position);
+        }
+    }
+
     public void MoveTo(Vector3 targetWorldPosition, Vector3Int targetGridPosition)
     {
         gridPosition = targetGridPosition;

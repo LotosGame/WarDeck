@@ -34,6 +34,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public int CurrentMana => currentMana;
+    public int CurrentMaxMana => currentMaxMana;
+    public int TurnCount => turnCount;
+
+    public bool CanAfford(int amount) => currentMana >= amount;
+
     public bool SpendMana(int amount)
     {
         if (currentMana >= amount)

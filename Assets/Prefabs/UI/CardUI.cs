@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
-public class CardUI : MonoBehaviour
+[RequireComponent(typeof(CanvasGroup))]
+public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI References")]
     [SerializeField] private Image backgroundImage;
@@ -11,6 +13,26 @@ public class CardUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI costText;
 
     public CardData CardData { get; private set; }
+
+    private CanvasGroup canvasGroup;
+    private Canvas rootCanvas;
+
+    private Transform originalParent;
+    private int originalSiblingIndex;
+    private Vector3 originalLocalScale;
+    private Quaternion originalLocalRotation;
+    private bool isDragging = false;
+
+    private void Awake()
+    {
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+
+        rootCanvas = GetComponentInParent<Canvas>();
+    }
 
     public void Setup(CardData data)
     {
@@ -69,6 +91,104 @@ public class CardUI : MonoBehaviour
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
         rect.localScale = Vector3.one;
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (isDragging) return;
+        transform.localScale = Vector3.one * 1.08f;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (isDragging) return;
+        transform.localScale = Vector3.one;
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (rootCanvas == null)
+            rootCanvas = GetComponentInParent<Canvas>();
+
+        isDragging = true;
+        originalParent = transform.parent;
+        originalSiblingIndex = transform.GetSiblingIndex();
+        originalLocalScale = transform.localScale;
+        originalLocalRotation = transform.localRotation;
+
+        // Выносим на верхний уровень Canvas, чтобы карта была поверх всех элементов UI
+        if (rootCanvas != null)
+        {
+            transform.SetParent(rootCanvas.transform, true);
+        }
+        transform.SetAsLastSibling();
+
+        // Отключаем блокировку лучей, чтобы события доходили до поля под картой
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = false;
+        }
+
+        // Выравниваем наклон и слегка уменьшаем для лучшего обзора поля боя
+        transform.localRotation = Quaternion.identity;
+        transform.localScale = Vector3.one * 0.85f;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        // Перемещаем карту за курсором/пальцем
+        transform.position = eventData.position;
+
+        // Обновляем подсветку клетки поля
+        if (CardManager.Instance != null)
+        {
+            CardManager.Instance.OnCardHoverTile(this, eventData.position);
+        }
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        isDragging = false;
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = true;
+        }
+
+        // Скрываем маркер подсветки
+        if (GridManager.Instance != null)
+        {
+            GridManager.Instance.HideHighlight();
+        }
+
+        // Пробуем разыграть карту на поле
+        bool played = false;
+        if (CardManager.Instance != null)
+        {
+            played = CardManager.Instance.TryPlayCard(this, eventData.position);
+        }
+
+        // Если не удалось разыграть — возвращаем в руку
+        if (!played)
+        {
+            ReturnToHand();
+        }
+    }
+
+    private void ReturnToHand()
+    {
+        if (originalParent != null)
+        {
+            transform.SetParent(originalParent, true);
+            transform.SetSiblingIndex(originalSiblingIndex);
+        }
+        transform.localScale = Vector3.one;
+        transform.localRotation = originalLocalRotation;
+
+        if (CardFanLayout.Instance != null)
+        {
+            CardFanLayout.Instance.UpdateFanLayout();
+        }
     }
 
     public void OnCardClick()
