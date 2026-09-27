@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46fc90da02d8ef0468919dac745276ec, type: 3}
+  m_Name: Card_Archer
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "\u041B\u0443\u0447\u043D\u0438\u043A"
+  description: "\u0410\u0442\u0430\u043A\u0430 \u0447\u0435\u0440\u0435\u0437 1 \u043A\u043B\u0435\u0442\u043A\u0443. \u0421\u043B\u0430\u0431 \u0432 \u0431\u043B\u0438\u0436\u043D\u0435\u043C \u0431\u043E\u044E."
+  cardType: 0
+  cost: 3
+  icon: {fileID: 0}
+  backgroundColor: {r: 0.62, g: 0.78, b: 0.42, a: 1}
+  iconTint: {r: 0.25, g: 0.45, b: 0.2, a: 1}
+  unitPrefab: {fileID: 6920986607861126372, guid: 1433bd053a5c93749bcf7d33488b2001, type: 3}
