@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -14,6 +15,8 @@ public class GridManager : MonoBehaviour
 
     private GameObject highlightObj;
     private SpriteRenderer highlightRenderer;
+
+    private List<GameObject> rangeMarkers = new List<GameObject>();
 
     private Capital playerCapital;
     private Capital enemyCapital;
@@ -178,6 +181,175 @@ public class GridManager : MonoBehaviour
         {
             highlightObj.SetActive(false);
         }
+    }
+
+    public bool IsInEnemySpawnZone(Vector3Int cellPos)
+    {
+        EnsureCapitalsRegistered();
+        if (enemyCapital == null) return false;
+
+        Vector3Int capCell = enemyCapital.gridPosition != Vector3Int.zero
+            ? enemyCapital.gridPosition
+            : WorldToCell(enemyCapital.transform.position);
+
+        int dx = Mathf.Abs(cellPos.x - capCell.x);
+        int dy = Mathf.Abs(cellPos.y - capCell.y);
+
+        return dx <= 1 && dy <= 1;
+    }
+
+    public Unit GetUnitAt(Vector3Int cellPos)
+    {
+        Unit[] units = FindObjectsByType<Unit>(FindObjectsSortMode.None);
+        foreach (var unit in units)
+        {
+            if (unit != null)
+            {
+                Vector3Int pos = unit.gridPosition != Vector3Int.zero ? unit.gridPosition : WorldToCell(unit.transform.position);
+                if (pos == cellPos)
+                    return unit;
+            }
+        }
+        return null;
+    }
+
+    public Capital GetCapitalAt(Vector3Int cellPos)
+    {
+        EnsureCapitalsRegistered();
+        if (playerCapital != null)
+        {
+            Vector3Int pPos = playerCapital.gridPosition != Vector3Int.zero ? playerCapital.gridPosition : WorldToCell(playerCapital.transform.position);
+            if (pPos == cellPos) return playerCapital;
+        }
+        if (enemyCapital != null)
+        {
+            Vector3Int ePos = enemyCapital.gridPosition != Vector3Int.zero ? enemyCapital.gridPosition : WorldToCell(enemyCapital.transform.position);
+            if (ePos == cellPos) return enemyCapital;
+        }
+        return null;
+    }
+
+    public void ShowMoveRange(Unit unit)
+    {
+        HideMoveRange();
+        if (unit == null || tilemap == null) return;
+
+        EnsureCapitalsRegistered();
+        Vector3Int currentPos = unit.gridPosition != Vector3Int.zero ? unit.gridPosition : WorldToCell(unit.transform.position);
+
+        int moveRange = unit.moveDistance;
+        int attackRange = unit.attackRange;
+
+        // 1. Клетки перемещения (синий оттенок)
+        if (moveRange > 0)
+        {
+            for (int dx = -moveRange; dx <= moveRange; dx++)
+            {
+                for (int dy = -moveRange; dy <= moveRange; dy++)
+                {
+                    int dist = Mathf.Abs(dx) + Mathf.Abs(dy);
+                    if (dist == 0 || dist > moveRange) continue;
+
+                    Vector3Int cell = currentPos + new Vector3Int(dx, dy, 0);
+                    if (HasTile(cell) && !IsCellOccupied(cell))
+                    {
+                        SpawnRangeMarker(cell, new Color(0.2f, 0.65f, 1f, 0.45f));
+                    }
+                }
+            }
+        }
+
+        // 2. Цели для атаки или лечения (красный или зеленый оттенок)
+        if (attackRange > 0)
+        {
+            for (int dx = -attackRange; dx <= attackRange; dx++)
+            {
+                for (int dy = -attackRange; dy <= attackRange; dy++)
+                {
+                    int dist = Mathf.Abs(dx) + Mathf.Abs(dy);
+                    if (dist == 0 || dist > attackRange) continue;
+
+                    Vector3Int cell = currentPos + new Vector3Int(dx, dy, 0);
+                    if (!HasTile(cell)) continue;
+
+                    Unit targetUnit = GetUnitAt(cell);
+                    if (targetUnit != null)
+                    {
+                        if (targetUnit.isPlayerUnit != unit.isPlayerUnit)
+                        {
+                            SpawnRangeMarker(cell, new Color(1f, 0.2f, 0.2f, 0.6f));
+                        }
+                        else if (unit.unitType == UnitType.Monk && targetUnit.currentHealth < targetUnit.maxHealth)
+                        {
+                            SpawnRangeMarker(cell, new Color(0.2f, 1f, 0.3f, 0.6f));
+                        }
+                    }
+                    else
+                    {
+                        Capital cap = GetCapitalAt(cell);
+                        if (cap != null && cap.isPlayerCapital != unit.isPlayerUnit)
+                        {
+                            SpawnRangeMarker(cell, new Color(1f, 0.15f, 0.15f, 0.65f));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void HideMoveRange()
+    {
+        foreach (var marker in rangeMarkers)
+        {
+            if (marker != null)
+                marker.SetActive(false);
+        }
+    }
+
+    private void SpawnRangeMarker(Vector3Int cellPos, Color color)
+    {
+        GameObject marker = null;
+        for (int i = 0; i < rangeMarkers.Count; i++)
+        {
+            if (rangeMarkers[i] != null && !rangeMarkers[i].activeSelf)
+            {
+                marker = rangeMarkers[i];
+                break;
+            }
+        }
+
+        if (marker == null)
+        {
+            marker = new GameObject($"RangeMarker_{rangeMarkers.Count}");
+            marker.transform.SetParent(transform);
+            SpriteRenderer sr = marker.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 3;
+            if (tilemap != null)
+            {
+                BoundsInt bounds = tilemap.cellBounds;
+                foreach (var pos in bounds.allPositionsWithin)
+                {
+                    if (tilemap.HasTile(pos))
+                    {
+                        Sprite s = tilemap.GetSprite(pos);
+                        if (s != null)
+                        {
+                            sr.sprite = s;
+                            break;
+                        }
+                    }
+                }
+            }
+            rangeMarkers.Add(marker);
+        }
+
+        marker.transform.position = GetCellCenterWorld(cellPos);
+        SpriteRenderer markerSr = marker.GetComponent<SpriteRenderer>();
+        if (markerSr != null)
+        {
+            markerSr.color = color;
+        }
+        marker.SetActive(true);
     }
 
     private void CreateHighlightObject()

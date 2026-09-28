@@ -250,6 +250,44 @@ public class Unit : MonoBehaviour
         }
     }
 
+    public void Attack(Unit target)
+    {
+        if (target == null) return;
+        hasMoved = true;
+        hasAttacked = true;
+        SetDimmed(true);
+        Debug.Log($"<color=orange>[Атака]</color> {unitName} атакует {target.unitName} на {attackPower} урона!");
+        target.TakeDamage(attackPower);
+    }
+
+    public void Attack(Capital capital)
+    {
+        if (capital == null) return;
+        hasMoved = true;
+        hasAttacked = true;
+        SetDimmed(true);
+        Debug.Log($"<color=orange>[Атака]</color> {unitName} атакует {capital.capitalName} на {attackPower} урона!");
+        capital.TakeDamage(attackPower);
+    }
+
+    public void HealTarget(Unit target, int amount)
+    {
+        if (target == null) return;
+        hasMoved = true;
+        hasAttacked = true;
+        SetDimmed(true);
+        Debug.Log($"<color=green>[Исцеление]</color> {unitName} исцеляет {target.unitName} на {amount} HP!");
+        target.Heal(amount);
+    }
+
+    public void SetDimmed(bool dimmed)
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = dimmed ? new Color(0.55f, 0.55f, 0.55f, 1f) : Color.white;
+        }
+    }
+
     public void MoveTo(Vector3 targetWorldPosition, Vector3Int targetGridPosition)
     {
         if (moveDistance <= 0)
@@ -260,9 +298,7 @@ public class Unit : MonoBehaviour
 
         gridPosition = targetGridPosition;
         hasMoved = true;
-
-        if (spriteRenderer != null)
-            spriteRenderer.color = Color.gray;
+        SetDimmed(true);
 
         StartCoroutine(AnimateMove(targetWorldPosition));
     }
@@ -281,8 +317,7 @@ public class Unit : MonoBehaviour
     {
         hasMoved = false;
         hasAttacked = false;
-        if (spriteRenderer != null)
-            spriteRenderer.color = Color.white;
+        SetDimmed(false);
     }
 
     public void Die()

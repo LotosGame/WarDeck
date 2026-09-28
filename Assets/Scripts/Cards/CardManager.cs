@@ -23,6 +23,25 @@ public class CardManager : MonoBehaviour
     public int DrawPileCount => drawPile.Count;
     public int DiscardPileCount => discardPile.Count;
 
+    public GameObject GetDefaultUnitPrefab()
+    {
+        EnsureAvailableCardTypes();
+        foreach (var c in availableCardTypes)
+        {
+            if (c != null && c.cardName == "Воины" && c.unitPrefab != null)
+                return c.unitPrefab;
+        }
+        foreach (var c in availableCardTypes)
+        {
+            if (c != null && c.unitPrefab != null)
+                return c.unitPrefab;
+        }
+        GameObject loaded = Resources.Load<GameObject>("Units/WarriorPrefab");
+        if (loaded != null) return loaded;
+
+        return null;
+    }
+
     private void Awake()
     {
         if (Instance == null)

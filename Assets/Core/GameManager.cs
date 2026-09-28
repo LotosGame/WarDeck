@@ -44,6 +44,8 @@ public class GameManager : MonoBehaviour
         UpdateManaUI();
     }
 
+    public bool IsPlayerTurn { get; private set; } = true;
+
     public int CurrentMana => currentMana;
     public int MaxMana => maxMana;
     public int TurnCount => turnCount;
@@ -63,6 +65,37 @@ public class GameManager : MonoBehaviour
 
     public void EndTurn()
     {
+        if (!IsPlayerTurn) return;
+
+        IsPlayerTurn = false;
+        if (endTurnButton != null) endTurnButton.interactable = false;
+
+        Debug.Log("<color=red>--- Ход противника начат ---</color>");
+
+        // Сбрасываем ход для юнитов противника перед их ходом
+        foreach (var unit in FindObjectsByType<Unit>(FindObjectsSortMode.None))
+        {
+            if (unit != null && !unit.isPlayerUnit)
+            {
+                unit.ResetTurn();
+            }
+        }
+
+        if (EnemyAI.Instance != null)
+        {
+            EnemyAI.Instance.ExecuteTurn(OnEnemyTurnFinished);
+        }
+        else
+        {
+            OnEnemyTurnFinished();
+        }
+    }
+
+    private void OnEnemyTurnFinished()
+    {
+        IsPlayerTurn = true;
+        if (endTurnButton != null) endTurnButton.interactable = true;
+
         turnCount++;
 
         // Каждый ход мана восполняется согласно номеру хода: 1/5, 2/5, 3/5, 4/5, 5/5
