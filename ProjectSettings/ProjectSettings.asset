@@ -698,11 +698,11 @@ PlayerSettings:
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
-  cloudProjectId: 1e428cd1-f133-4b37-9cd3-341a2aa907bb
+  cloudProjectId: 7cfb9520-77f1-4bda-be23-e538ca407908
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: My project (2)
-  organizationId: agaltik5
+  projectName: WarDeck-GameMain
+  organizationId: alendromalyamu1l806t
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

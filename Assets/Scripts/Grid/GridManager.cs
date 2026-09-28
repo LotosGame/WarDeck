@@ -10,7 +10,7 @@ public class GridManager : MonoBehaviour
 
     [Header("Spawn Settings")]
     [Tooltip("Радиус клеток вокруг синей столицы, где разрешен призыв юнитов")]
-    [SerializeField] private int playerSpawnRadius = 2;
+    [SerializeField] private int playerSpawnRadius = 1;
 
     private GameObject highlightObj;
     private SpriteRenderer highlightRenderer;
@@ -101,6 +101,12 @@ public class GridManager : MonoBehaviour
         return playerCapital;
     }
 
+    public Capital GetEnemyCapital()
+    {
+        EnsureCapitalsRegistered();
+        return enemyCapital;
+    }
+
     public bool IsInPlayerSpawnZone(Vector3Int cellPos)
     {
         EnsureCapitalsRegistered();
@@ -108,42 +114,38 @@ public class GridManager : MonoBehaviour
         if (playerCapital == null)
             return true; // Если база не обнаружена, не блокируем спавн
 
-        Vector3Int capCell = playerCapital.gridPosition;
+        Vector3Int capCell = playerCapital.gridPosition != Vector3Int.zero 
+            ? playerCapital.gridPosition 
+            : WorldToCell(playerCapital.transform.position);
 
-        // Нельзя спавнить прямо поверх самого квадрата столицы
-        if (cellPos == capCell)
-            return false;
+        // В радиусе 1 клетки от столицы: ровно 9 клеток (сама столица и 8 клеток вокруг нее)
+        int dx = Mathf.Abs(cellPos.x - capCell.x);
+        int dy = Mathf.Abs(cellPos.y - capCell.y);
 
-        // Расстояние по сетке (Манхэттенская дистанция для изометрической сетки)
-        int distance = Mathf.Abs(cellPos.x - capCell.x) + Mathf.Abs(cellPos.y - capCell.y);
-
-        return distance <= playerSpawnRadius;
+        return dx <= 1 && dy <= 1;
     }
 
     public bool IsCellOccupied(Vector3Int cellPos)
     {
         EnsureCapitalsRegistered();
 
-        // Проверка наличия юнитов на клетке
+        // Проверка наличия юнитов на клетке (нельзя спавнить юнитов поверх других юнитов)
         Unit[] units = FindObjectsByType<Unit>(FindObjectsSortMode.None);
         foreach (var unit in units)
         {
-            if (unit != null && unit.gridPosition == cellPos)
-                return true;
+            if (unit != null)
+            {
+                Vector3Int pos = unit.gridPosition != Vector3Int.zero ? unit.gridPosition : WorldToCell(unit.transform.position);
+                if (pos == cellPos)
+                    return true;
+            }
         }
 
-        // Проверка наличия столицы на клетке
-        if (playerCapital != null && playerCapital.gridPosition == cellPos)
-            return true;
-
-        if (enemyCapital != null && enemyCapital.gridPosition == cellPos)
-            return true;
-
-        Capital[] capitals = FindObjectsByType<Capital>(FindObjectsSortMode.None);
-        foreach (var cap in capitals)
+        // Вражеская столица блокирует свою клетку
+        if (enemyCapital != null)
         {
-            if (cap != null && cap.gridPosition == cellPos)
-                return true;
+            Vector3Int ePos = enemyCapital.gridPosition != Vector3Int.zero ? enemyCapital.gridPosition : WorldToCell(enemyCapital.transform.position);
+            if (ePos == cellPos) return true;
         }
 
         return false;

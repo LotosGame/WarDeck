@@ -23,14 +23,25 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // 1-й ход: мана 1/5
-        currentMana = Mathf.Min(turnCount, maxMana);
-        UpdateManaUI();
+        TMP_FontAsset cyrFont = CyrillicFontRuntimeFallback.GetCyrillicFont();
+        if (manaText != null && cyrFont != null)
+        {
+            manaText.font = cyrFont;
+        }
 
         if (endTurnButton != null)
         {
+            TMP_Text btnText = endTurnButton.GetComponentInChildren<TMP_Text>();
+            if (btnText != null && cyrFont != null)
+            {
+                btnText.font = cyrFont;
+            }
             endTurnButton.onClick.AddListener(EndTurn);
         }
+
+        // 1-й ход: мана 1/5
+        currentMana = Mathf.Min(turnCount, maxMana);
+        UpdateManaUI();
     }
 
     public int CurrentMana => currentMana;
@@ -67,6 +78,16 @@ public class GameManager : MonoBehaviour
             if (unit != null && unit.isPlayerUnit)
             {
                 unit.ResetTurn();
+            }
+        }
+
+        // Первый ход — ход осмотра.
+        // На 2-й ход и далее каждые 3 хода (Ход 2, Ход 5, Ход 8, Ход 11...) предлагается добор 1 из 2 карт
+        if (turnCount >= 2 && (turnCount - 2) % 3 == 0)
+        {
+            if (CardManager.Instance != null)
+            {
+                CardManager.Instance.TriggerCardChoice();
             }
         }
     }

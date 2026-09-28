@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem; // Добавляем пространство имен
 
 public class CardPlayer : MonoBehaviour
