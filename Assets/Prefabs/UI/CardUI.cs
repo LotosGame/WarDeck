@@ -168,6 +168,15 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         // Выравниваем наклон и слегка уменьшаем для лучшего обзора поля боя
         transform.localRotation = Quaternion.identity;
         transform.localScale = baseScale * 0.9f;
+
+        // Если это юнит или постройка, визуально подсвечиваем зону призыва
+        if (CardData != null && CardData.cardType != CardType.Spell && !CardData.cardName.Contains("Стрелы"))
+        {
+            if (GridManager.Instance != null)
+            {
+                GridManager.Instance.ShowPlayerSpawnZone();
+            }
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -195,10 +204,11 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             canvasGroup.blocksRaycasts = true;
         }
 
-        // Скрываем маркер подсветки
+        // Скрываем маркер подсветки и зону спавна
         if (GridManager.Instance != null)
         {
             GridManager.Instance.HideHighlight();
+            GridManager.Instance.HidePlayerSpawnZone();
         }
 
         // Пробуем разыграть карту на поле

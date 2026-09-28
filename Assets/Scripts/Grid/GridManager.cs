@@ -13,10 +13,15 @@ public class GridManager : MonoBehaviour
     [Tooltip("Радиус клеток вокруг синей столицы, где разрешен призыв юнитов")]
     [SerializeField] private int playerSpawnRadius = 1;
 
+    [Header("Unit Alignment")]
+    [Tooltip("Визуальное смещение юнитов по Y для точной посадки ног в центр изометрической клетки")]
+    [SerializeField] private float unitVisualYOffset = 0.18f;
+
     private GameObject highlightObj;
     private SpriteRenderer highlightRenderer;
 
     private List<GameObject> rangeMarkers = new List<GameObject>();
+    private List<GameObject> spawnZoneMarkers = new List<GameObject>();
 
     private Capital playerCapital;
     private Capital enemyCapital;
@@ -44,6 +49,8 @@ public class GridManager : MonoBehaviour
 
     public Tilemap Tilemap => tilemap;
     public int PlayerSpawnRadius => playerSpawnRadius;
+    public float UnitVisualYOffset => unitVisualYOffset;
+    public Vector3 UnitVisualOffset => new Vector3(0f, unitVisualYOffset, 0f);
 
     public void EnsureCapitalsRegistered()
     {
@@ -55,7 +62,8 @@ public class GridManager : MonoBehaviour
                 playerCapital = p2.GetComponent<Capital>() ?? p2.AddComponent<Capital>();
                 playerCapital.isPlayerCapital = true;
                 playerCapital.teamId = 1;
-                playerCapital.gridPosition = WorldToCell(p2.transform.position);
+                // Смещаем точку выборки вверх на +0.2f, так как спрайт столицы центрирован и смещен вниз
+                playerCapital.gridPosition = WorldToCell(p2.transform.position + new Vector3(0f, 0.2f, 0f));
             }
         }
 
@@ -67,7 +75,7 @@ public class GridManager : MonoBehaviour
                 enemyCapital = p1.GetComponent<Capital>() ?? p1.AddComponent<Capital>();
                 enemyCapital.isPlayerCapital = false;
                 enemyCapital.teamId = 2;
-                enemyCapital.gridPosition = WorldToCell(p1.transform.position);
+                enemyCapital.gridPosition = WorldToCell(p1.transform.position + new Vector3(0f, 0.2f, 0f));
             }
         }
     }
@@ -117,15 +125,13 @@ public class GridManager : MonoBehaviour
         if (playerCapital == null)
             return true; // Если база не обнаружена, не блокируем спавн
 
-        Vector3Int capCell = playerCapital.gridPosition != Vector3Int.zero 
-            ? playerCapital.gridPosition 
-            : WorldToCell(playerCapital.transform.position);
+        Vector3Int capCell = playerCapital.gridPosition;
 
         // В радиусе 1 клетки от столицы: ровно 9 клеток (сама столица и 8 клеток вокруг нее)
         int dx = Mathf.Abs(cellPos.x - capCell.x);
         int dy = Mathf.Abs(cellPos.y - capCell.y);
 
-        return dx <= 1 && dy <= 1;
+        return dx <= playerSpawnRadius && dy <= playerSpawnRadius;
     }
 
     public bool IsCellOccupied(Vector3Int cellPos)
@@ -138,17 +144,18 @@ public class GridManager : MonoBehaviour
         {
             if (unit != null)
             {
-                Vector3Int pos = unit.gridPosition != Vector3Int.zero ? unit.gridPosition : WorldToCell(unit.transform.position);
+                Vector3Int pos = unit.gridPosition != Vector3Int.zero 
+                    ? unit.gridPosition 
+                    : WorldToCell(unit.transform.position - UnitVisualOffset);
                 if (pos == cellPos)
                     return true;
             }
         }
 
         // Вражеская столица блокирует свою клетку
-        if (enemyCapital != null)
+        if (enemyCapital != null && enemyCapital.gridPosition == cellPos)
         {
-            Vector3Int ePos = enemyCapital.gridPosition != Vector3Int.zero ? enemyCapital.gridPosition : WorldToCell(enemyCapital.transform.position);
-            if (ePos == cellPos) return true;
+            return true;
         }
 
         return false;
@@ -188,14 +195,12 @@ public class GridManager : MonoBehaviour
         EnsureCapitalsRegistered();
         if (enemyCapital == null) return false;
 
-        Vector3Int capCell = enemyCapital.gridPosition != Vector3Int.zero
-            ? enemyCapital.gridPosition
-            : WorldToCell(enemyCapital.transform.position);
+        Vector3Int capCell = enemyCapital.gridPosition;
 
         int dx = Mathf.Abs(cellPos.x - capCell.x);
         int dy = Mathf.Abs(cellPos.y - capCell.y);
 
-        return dx <= 1 && dy <= 1;
+        return dx <= playerSpawnRadius && dy <= playerSpawnRadius;
     }
 
     public Unit GetUnitAt(Vector3Int cellPos)
@@ -205,7 +210,9 @@ public class GridManager : MonoBehaviour
         {
             if (unit != null)
             {
-                Vector3Int pos = unit.gridPosition != Vector3Int.zero ? unit.gridPosition : WorldToCell(unit.transform.position);
+                Vector3Int pos = unit.gridPosition != Vector3Int.zero 
+                    ? unit.gridPosition 
+                    : WorldToCell(unit.transform.position - UnitVisualOffset);
                 if (pos == cellPos)
                     return unit;
             }
@@ -380,5 +387,82 @@ public class GridManager : MonoBehaviour
         }
 
         highlightObj.SetActive(false);
+    }
+
+    public void ShowPlayerSpawnZone()
+    {
+        HidePlayerSpawnZone();
+        EnsureCapitalsRegistered();
+        if (playerCapital == null || tilemap == null) return;
+
+        Vector3Int capCell = playerCapital.gridPosition;
+        int radius = playerSpawnRadius;
+
+        for (int x = -radius; x <= radius; x++)
+        {
+            for (int y = -radius; y <= radius; y++)
+            {
+                Vector3Int cell = capCell + new Vector3Int(x, y, 0);
+                if (HasTile(cell) && !IsCellOccupied(cell))
+                {
+                    SpawnZoneMarker(cell, new Color(0.2f, 0.85f, 0.4f, 0.35f));
+                }
+            }
+        }
+    }
+
+    public void HidePlayerSpawnZone()
+    {
+        foreach (var marker in spawnZoneMarkers)
+        {
+            if (marker != null)
+                marker.SetActive(false);
+        }
+    }
+
+    private void SpawnZoneMarker(Vector3Int cellPos, Color color)
+    {
+        GameObject marker = null;
+        for (int i = 0; i < spawnZoneMarkers.Count; i++)
+        {
+            if (spawnZoneMarkers[i] != null && !spawnZoneMarkers[i].activeSelf)
+            {
+                marker = spawnZoneMarkers[i];
+                break;
+            }
+        }
+
+        if (marker == null)
+        {
+            marker = new GameObject($"SpawnZoneMarker_{spawnZoneMarkers.Count}");
+            marker.transform.SetParent(transform);
+            SpriteRenderer sr = marker.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 2; // Над тайлами карты, под маркером наведения
+            if (tilemap != null)
+            {
+                BoundsInt bounds = tilemap.cellBounds;
+                foreach (var pos in bounds.allPositionsWithin)
+                {
+                    if (tilemap.HasTile(pos))
+                    {
+                        Sprite s = tilemap.GetSprite(pos);
+                        if (s != null)
+                        {
+                            sr.sprite = s;
+                            break;
+                        }
+                    }
+                }
+            }
+            spawnZoneMarkers.Add(marker);
+        }
+
+        marker.transform.position = GetCellCenterWorld(cellPos);
+        SpriteRenderer markerSr = marker.GetComponent<SpriteRenderer>();
+        if (markerSr != null)
+        {
+            markerSr.color = color;
+        }
+        marker.SetActive(true);
     }
 }

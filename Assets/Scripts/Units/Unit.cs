@@ -38,6 +38,10 @@ public class Unit : MonoBehaviour
     [HideInInspector] public bool hasMoved = false;
     [HideInInspector] public bool hasAttacked = false;
 
+    [Header("Visual Alignment")]
+    [Tooltip("Смещение по Y для точной посадки ног юнита в центр изометрической клетки")]
+    public float visualYOffset = 0.18f;
+
     private SpriteRenderer spriteRenderer;
 
     // UI элементы полоски здоровья
@@ -68,9 +72,15 @@ public class Unit : MonoBehaviour
 
     private void Start()
     {
-        if (GridManager.Instance != null && gridPosition == Vector3Int.zero)
+        if (GridManager.Instance != null)
         {
-            gridPosition = GridManager.Instance.WorldToCell(transform.position);
+            if (gridPosition == Vector3Int.zero)
+            {
+                gridPosition = GridManager.Instance.WorldToCell(transform.position - new Vector3(0f, visualYOffset, 0f));
+            }
+
+            Vector3 center = GridManager.Instance.GetCellCenterWorld(gridPosition);
+            transform.position = new Vector3(center.x, center.y + visualYOffset, 0f);
         }
 
         CreateHealthBar();
@@ -300,7 +310,18 @@ public class Unit : MonoBehaviour
         hasMoved = true;
         SetDimmed(true);
 
-        StartCoroutine(AnimateMove(targetWorldPosition));
+        Vector3 targetPos = targetWorldPosition;
+        if (GridManager.Instance != null)
+        {
+            Vector3 center = GridManager.Instance.GetCellCenterWorld(targetGridPosition);
+            targetPos = new Vector3(center.x, center.y + visualYOffset, 0f);
+        }
+        else
+        {
+            targetPos.y += visualYOffset;
+        }
+
+        StartCoroutine(AnimateMove(targetPos));
     }
 
     private IEnumerator AnimateMove(Vector3 targetPos)

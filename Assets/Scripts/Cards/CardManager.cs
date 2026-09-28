@@ -459,8 +459,9 @@ public class CardManager : MonoBehaviour
             GameManager.Instance.SpendMana(cardData.cost);
         }
 
-        // 6. Спавним объект
-        GameObject spawnedUnitObj = Instantiate(cardData.unitPrefab, targetWorldPos, Quaternion.identity);
+        // 6. Спавним объект с учетом смещения ног на изометрическом тайле
+        Vector3 spawnWorldPos = targetWorldPos + (GridManager.Instance != null ? GridManager.Instance.UnitVisualOffset : Vector3.zero);
+        GameObject spawnedUnitObj = Instantiate(cardData.unitPrefab, spawnWorldPos, Quaternion.identity);
         spawnedUnitObj.name = $"{cardData.cardName}_{cellPos.x}_{cellPos.y}";
 
         Unit unit = spawnedUnitObj.GetComponent<Unit>();

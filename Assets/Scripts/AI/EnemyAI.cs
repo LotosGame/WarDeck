@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -202,7 +202,7 @@ public class EnemyAI : MonoBehaviour
 
         CacheEnemySprite();
 
-        Vector3 worldPos = GridManager.Instance.GetCellCenterWorld(cellPos);
+        Vector3 worldPos = GridManager.Instance.GetCellCenterWorld(cellPos) + (GridManager.Instance != null ? GridManager.Instance.UnitVisualOffset : Vector3.zero);
         worldPos.z = 0;
 
         GameObject spawned = Instantiate(prefab, worldPos, Quaternion.identity);

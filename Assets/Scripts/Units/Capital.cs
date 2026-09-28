@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class Capital : MonoBehaviour
@@ -42,9 +42,9 @@ public class Capital : MonoBehaviour
 
     private void Start()
     {
-        if (GridManager.Instance != null)
+        if (GridManager.Instance != null && gridPosition == Vector3Int.zero)
         {
-            gridPosition = GridManager.Instance.WorldToCell(transform.position);
+            gridPosition = GridManager.Instance.WorldToCell(transform.position + new Vector3(0f, 0.2f, 0f));
         }
     }
 
