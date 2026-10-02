@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Capital : MonoBehaviour
@@ -13,11 +14,14 @@ public class Capital : MonoBehaviour
 
     [HideInInspector] public Vector3Int gridPosition;
 
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor = Color.white;
+
     private void Awake()
     {
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
         // CapitalPlayer2 (синяя столица) принадлежит игроку
-        if (gameObject.name.Contains("Player2") || (sr != null && sr.color.b > sr.color.r))
+        if (gameObject.name.Contains("Player2") || (spriteRenderer != null && spriteRenderer.color.b > spriteRenderer.color.r))
         {
             isPlayerCapital = true;
             teamId = 1;
@@ -29,24 +33,52 @@ public class Capital : MonoBehaviour
             teamId = 2;
             capitalName = "Enemy Capital (Red)";
         }
+
+        if (spriteRenderer != null)
+        {
+            originalColor = spriteRenderer.color;
+        }
     }
 
     private void Start()
     {
-        if (GridManager.Instance != null)
+        if (GridManager.Instance != null && gridPosition == Vector3Int.zero)
         {
-            gridPosition = GridManager.Instance.WorldToCell(transform.position);
+            gridPosition = GridManager.Instance.WorldToCell(transform.position + new Vector3(0f, 0.2f, 0f));
         }
     }
 
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
-        Debug.Log($"[{capitalName}] получил {amount} урона! Осталось HP: {currentHealth}/{maxHealth}");
+        StartCoroutine(DamageFlash());
+        Debug.Log($"<color={(isPlayerCapital ? "blue" : "red")}>[{capitalName}]</color> получил {amount} урона! Осталось HP: {currentHealth}/{maxHealth}");
+
         if (currentHealth <= 0)
         {
             currentHealth = 0;
-            Debug.Log($"[{capitalName}] уничтожена!");
+            Debug.Log($"<color=yellow>[{capitalName}] уничтожена!</color>");
+            if (isPlayerCapital)
+            {
+                Debug.Log("<color=red>=== ПОРАЖЕНИЕ! Ваша столица была разрушена! ===</color>");
+            }
+            else
+            {
+                Debug.Log("<color=green>=== ПОБЕДА! Вражеская столица разрушена! ===</color>");
+            }
+        }
+    }
+
+    private IEnumerator DamageFlash()
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = Color.white;
+            yield return new WaitForSeconds(0.15f);
+            if (this != null && spriteRenderer != null)
+            {
+                spriteRenderer.color = originalColor;
+            }
         }
     }
 }

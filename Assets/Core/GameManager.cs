@@ -23,15 +23,34 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        TMP_FontAsset cyrFont = CyrillicFontRuntimeFallback.GetCyrillicFont();
+        if (manaText != null && cyrFont != null)
+        {
+            manaText.font = cyrFont;
+        }
+
+        if (endTurnButton != null)
+        {
+            TMP_Text btnText = endTurnButton.GetComponentInChildren<TMP_Text>();
+            if (btnText != null && cyrFont != null)
+            {
+                btnText.font = cyrFont;
+            }
+            endTurnButton.onClick.AddListener(EndTurn);
+        }
+
         // 1-й ход: мана 1/5
         currentMana = Mathf.Min(turnCount, maxMana);
         UpdateManaUI();
 
-        if (endTurnButton != null)
+        // Убеждаемся, что искусственный интеллект (EnemyAI) активирован и готов
+        if (EnemyAI.Instance != null)
         {
-            endTurnButton.onClick.AddListener(EndTurn);
+            Debug.Log("<color=green>[GameManager]</color> Искусственный интеллект противника (EnemyAI) активен и готов к ходу.");
         }
     }
+
+    public bool IsPlayerTurn { get; private set; } = true;
 
     public int CurrentMana => currentMana;
     public int MaxMana => maxMana;
@@ -52,6 +71,37 @@ public class GameManager : MonoBehaviour
 
     public void EndTurn()
     {
+        if (!IsPlayerTurn) return;
+
+        IsPlayerTurn = false;
+        if (endTurnButton != null) endTurnButton.interactable = false;
+
+        Debug.Log("<color=red>--- Ход противника начат ---</color>");
+
+        // Сбрасываем ход для юнитов противника перед их ходом
+        foreach (var unit in FindObjectsByType<Unit>(FindObjectsSortMode.None))
+        {
+            if (unit != null && !unit.isPlayerUnit)
+            {
+                unit.ResetTurn();
+            }
+        }
+
+        if (EnemyAI.Instance != null)
+        {
+            EnemyAI.Instance.ExecuteTurn(OnEnemyTurnFinished);
+        }
+        else
+        {
+            OnEnemyTurnFinished();
+        }
+    }
+
+    private void OnEnemyTurnFinished()
+    {
+        IsPlayerTurn = true;
+        if (endTurnButton != null) endTurnButton.interactable = true;
+
         turnCount++;
 
         // Каждый ход мана восполняется согласно номеру хода: 1/5, 2/5, 3/5, 4/5, 5/5
@@ -67,6 +117,16 @@ public class GameManager : MonoBehaviour
             if (unit != null && unit.isPlayerUnit)
             {
                 unit.ResetTurn();
+            }
+        }
+
+        // Первый ход — ход осмотра.
+        // На 2-й ход и далее каждые 3 хода (Ход 2, Ход 5, Ход 8, Ход 11...) предлагается добор 1 из 2 карт
+        if (turnCount >= 2 && (turnCount - 2) % 3 == 0)
+        {
+            if (CardManager.Instance != null)
+            {
+                CardManager.Instance.TriggerCardChoice();
             }
         }
     }

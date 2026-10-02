@@ -13,6 +13,8 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
     [SerializeField] private TextMeshProUGUI costText;
 
     public CardData CardData { get; private set; }
+    public bool isDraggable = true;
+    public System.Action<CardUI> onCardClicked;
 
     private CanvasGroup canvasGroup;
     private Canvas rootCanvas;
@@ -39,8 +41,18 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         CardData = data;
         if (data == null) return;
 
-        if (nameText != null) nameText.text = data.cardName;
-        if (costText != null) costText.text = data.cost.ToString();
+        TMP_FontAsset cyrFont = CyrillicFontRuntimeFallback.GetCyrillicFont();
+        if (nameText != null)
+        {
+            if (cyrFont != null) nameText.font = cyrFont;
+            nameText.text = data.cardName;
+        }
+
+        if (costText != null)
+        {
+            if (cyrFont != null) costText.font = cyrFont;
+            costText.text = data.cost.ToString();
+        }
 
         if (backgroundImage == null)
         {
@@ -71,13 +83,21 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             iconImage.color = Color.white;
             if (backgroundImage != null)
             {
-                backgroundImage.color = Color.white;
+                backgroundImage.color = Color.clear;
             }
+            if (nameText != null) nameText.gameObject.SetActive(false);
+            if (costText != null) costText.gameObject.SetActive(false);
         }
         else
         {
             iconImage.enabled = false;
             iconImage.sprite = null;
+            if (backgroundImage != null)
+            {
+                backgroundImage.color = data.backgroundColor;
+            }
+            if (nameText != null) nameText.gameObject.SetActive(true);
+            if (costText != null) costText.gameObject.SetActive(true);
         }
     }
 
@@ -93,27 +113,51 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         rect.localScale = Vector3.one;
     }
 
+    private Vector3 baseScale = Vector3.one;
+    private bool isBaseScaleSet = false;
+
+    public void SetBaseScale(Vector3 scale)
+    {
+        baseScale = scale;
+        isBaseScaleSet = true;
+        transform.localScale = scale;
+    }
+
+    private void EnsureBaseScale()
+    {
+        if (!isBaseScaleSet && transform.localScale != Vector3.zero)
+        {
+            baseScale = transform.localScale;
+            isBaseScaleSet = true;
+        }
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (isDragging) return;
-        transform.localScale = Vector3.one * 1.08f;
+        EnsureBaseScale();
+        transform.localScale = baseScale * 1.15f; // Увеличиваем размер при наведении
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (isDragging) return;
-        transform.localScale = Vector3.one;
+        EnsureBaseScale();
+        transform.localScale = baseScale; // Возвращаем исходный размер
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (!isDraggable) return;
+
         if (rootCanvas == null)
             rootCanvas = GetComponentInParent<Canvas>();
 
+        EnsureBaseScale();
         isDragging = true;
         originalParent = transform.parent;
         originalSiblingIndex = transform.GetSiblingIndex();
-        originalLocalScale = transform.localScale;
+        originalLocalScale = baseScale;
         originalLocalRotation = transform.localRotation;
 
         // Выносим на верхний уровень Canvas, чтобы карта была поверх всех элементов UI
@@ -131,11 +175,22 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
         // Выравниваем наклон и слегка уменьшаем для лучшего обзора поля боя
         transform.localRotation = Quaternion.identity;
-        transform.localScale = Vector3.one * 0.85f;
+        transform.localScale = baseScale * 0.9f;
+
+        // Если это юнит или постройка, визуально подсвечиваем зону призыва
+        if (CardData != null && CardData.cardType != CardType.Spell && !CardData.cardName.Contains("Стрелы"))
+        {
+            if (GridManager.Instance != null)
+            {
+                GridManager.Instance.ShowPlayerSpawnZone();
+            }
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (!isDraggable) return;
+
         // Перемещаем карту за курсором/пальцем
         transform.position = eventData.position;
 
@@ -148,6 +203,8 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (!isDraggable) return;
+
         isDragging = false;
 
         if (canvasGroup != null)
@@ -155,10 +212,11 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             canvasGroup.blocksRaycasts = true;
         }
 
-        // Скрываем маркер подсветки
+        // Скрываем маркер подсветки и зону спавна
         if (GridManager.Instance != null)
         {
             GridManager.Instance.HideHighlight();
+            GridManager.Instance.HidePlayerSpawnZone();
         }
 
         // Пробуем разыграть карту на поле
@@ -182,7 +240,8 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
             transform.SetParent(originalParent, true);
             transform.SetSiblingIndex(originalSiblingIndex);
         }
-        transform.localScale = Vector3.one;
+        EnsureBaseScale();
+        transform.localScale = baseScale;
         transform.localRotation = originalLocalRotation;
 
         if (CardFanLayout.Instance != null)
@@ -193,6 +252,12 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
 
     public void OnCardClick()
     {
+        if (onCardClicked != null)
+        {
+            onCardClicked.Invoke(this);
+            return;
+        }
+
         if (CardManager.Instance != null)
         {
             CardManager.Instance.OnCardSelected(this);

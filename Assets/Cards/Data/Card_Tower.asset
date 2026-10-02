@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 46fc90da02d8ef0468919dac745276ec, type: 3}
+  m_Name: Card_Tower
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "\u0411\u0430\u0448\u043D\u044F"
+  description: "\u041E\u0431\u043E\u0440\u043E\u043D\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0435 \u0441\u043E\u043E\u0440\u0443\u0436\u0435\u043D\u0438\u0435. \u0417\u0430\u0449\u0438\u0449\u0430\u0435\u0442 \u0440\u0443\u0431\u0435\u0436\u0438."
+  cardType: 1
+  cost: 3
+  cardArt: {fileID: 21300000, guid: 4f515de5a19a4ea0a8fcea39bf0f2cb4, type: 3}
+  backgroundColor: {r: 0.5, g: 0.35, b: 0.5, a: 1}
+  iconTint: {r: 1, g: 1, b: 1, a: 1}
+  unitPrefab: {fileID: 6920986607861126372, guid: 5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e, type: 3}
+  unitSprite: {fileID: 0}

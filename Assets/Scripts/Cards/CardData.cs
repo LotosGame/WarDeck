@@ -30,4 +30,6 @@ public class CardData : ScriptableObject
 
     [Header("Gameplay")]
     public GameObject unitPrefab;
+    [Tooltip("Спрайт юнита/башни на поле боя. Если назначен, юнит получит этот спрайт.")]
+    public Sprite unitSprite;
 }

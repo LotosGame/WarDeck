@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [ExecuteAlways]
 public class CardFanLayout : MonoBehaviour
@@ -28,6 +28,10 @@ public class CardFanLayout : MonoBehaviour
         // Находим реальный центр руки
         float centerIndex = (count - 1) / 2f;
 
+        // Если карт 3 или меньше — они просто становятся в ровный горизонтальный ряд
+        bool isStraightRow = count <= 3;
+        float rowSpacing = Mathf.Max(cardSpacing, 110f);
+
         for (int i = 0; i < count; i++)
         {
             RectTransform child = transform.GetChild(i) as RectTransform;
@@ -36,21 +40,24 @@ public class CardFanLayout : MonoBehaviour
             // Индекс карты относительно центра (от -centerIndex до +centerIndex)
             float indexFromCenter = i - centerIndex;
 
-            // Нормализованное смещение от -1 до 1 (для расчёта поворота и высоты)
-            float normalizedOffset = (count > 1) ? indexFromCenter / centerIndex : 0f;
+            if (isStraightRow)
+            {
+                // Ровный ряд: поворот 0, высота Y 0, комфортное расстояние
+                float xPos = indexFromCenter * rowSpacing;
+                child.anchoredPosition = new Vector2(xPos, 0f);
+                child.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                // Веер при > 3 картах: параболическая дуга и наклон
+                float normalizedOffset = (count > 1) ? indexFromCenter / centerIndex : 0f;
+                float xPos = indexFromCenter * cardSpacing;
+                float yPos = -Mathf.Pow(normalizedOffset, 2) * curveHeight;
+                float rotationZ = -normalizedOffset * maxRotation;
 
-            // 1. Позиция X (симметрично от центра 0)
-            float xPos = indexFromCenter * cardSpacing;
-
-            // 2. Позиция Y (параболическая дуга)
-            float yPos = -Mathf.Pow(normalizedOffset, 2) * curveHeight;
-
-            // 3. Поворот Z (наклон)
-            float rotationZ = -normalizedOffset * maxRotation;
-
-            // Применяем локальную позицию относительно центра HandPanel
-            child.anchoredPosition = new Vector2(xPos, yPos);
-            child.localRotation = Quaternion.Euler(0f, 0f, rotationZ);
+                child.anchoredPosition = new Vector2(xPos, yPos);
+                child.localRotation = Quaternion.Euler(0f, 0f, rotationZ);
+            }
         }
     }
 }
