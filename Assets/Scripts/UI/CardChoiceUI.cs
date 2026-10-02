@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -103,10 +103,10 @@ public class CardChoiceUI : MonoBehaviour
         containerRt.anchorMin = new Vector2(0.5f, 0.45f);
         containerRt.anchorMax = new Vector2(0.5f, 0.45f);
         containerRt.pivot = new Vector2(0.5f, 0.5f);
-        containerRt.sizeDelta = new Vector2(500, 260);
+        containerRt.sizeDelta = new Vector2(700, 360);
 
         HorizontalLayoutGroup hlg = cardContainer.AddComponent<HorizontalLayoutGroup>();
-        hlg.spacing = 80;
+        hlg.spacing = 140;
         hlg.childAlignment = TextAnchor.MiddleCenter;
         hlg.childControlWidth = false;
         hlg.childControlHeight = false;
@@ -154,12 +154,12 @@ public class CardChoiceUI : MonoBehaviour
     private void CreateChoiceCard(CardData targetCard, CardData otherCard, GameObject prefab)
     {
         GameObject cardObj = Instantiate(prefab, cardContainer.transform);
-        cardObj.transform.localScale = Vector3.one * 1.35f; // Увеличенный размер для презентации
+        cardObj.transform.localScale = Vector3.one * 1.6f; // Увеличенный размер для презентации
 
         CardUI cardUI = cardObj.GetComponent<CardUI>();
         if (cardUI != null)
         {
-            cardUI.SetBaseScale(Vector3.one * 1.35f);
+            cardUI.SetBaseScale(Vector3.one * 1.6f);
             cardUI.Setup(targetCard);
             cardUI.isDraggable = false; // Отключаем перетаскивание на поле
             cardUI.onCardClicked = (clickedUI) =>
@@ -172,10 +172,10 @@ public class CardChoiceUI : MonoBehaviour
         GameObject btnObj = new GameObject("PickButton");
         btnObj.transform.SetParent(cardObj.transform, false);
         RectTransform btnRt = btnObj.AddComponent<RectTransform>();
-        btnRt.anchorMin = new Vector2(0.5f, -0.2f);
-        btnRt.anchorMax = new Vector2(0.5f, -0.2f);
+        btnRt.anchorMin = new Vector2(0.5f, -0.15f);
+        btnRt.anchorMax = new Vector2(0.5f, -0.15f);
         btnRt.pivot = new Vector2(0.5f, 0.5f);
-        btnRt.sizeDelta = new Vector2(100, 30);
+        btnRt.sizeDelta = new Vector2(110, 34);
 
         Image btnImg = btnObj.AddComponent<Image>();
         btnImg.color = new Color(0.2f, 0.7f, 0.3f, 1f); // Зеленая кнопка

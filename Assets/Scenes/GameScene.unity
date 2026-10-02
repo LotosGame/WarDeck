@@ -2786,8 +2786,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 56}
-  m_SizeDelta: {x: 800, y: 180}
+  m_AnchoredPosition: {x: 0, y: 95}
+  m_SizeDelta: {x: 900, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &912256440
 MonoBehaviour:
@@ -2801,9 +2801,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968cf5da3e26755409bf0d2263fbaf54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardFanLayout
-  curveHeight: 20
+  curveHeight: 25
   maxRotation: 10
-  cardSpacing: 50
+  cardSpacing: 100
 --- !u!1 &967495466
 GameObject:
   m_ObjectHideFlags: 0

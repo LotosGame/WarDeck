@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [ExecuteAlways]
 public class CardFanLayout : MonoBehaviour
@@ -6,7 +6,7 @@ public class CardFanLayout : MonoBehaviour
     [Header("Fan Settings")]
     [SerializeField] private float curveHeight = 30f;   // Подъем центральных карт
     [SerializeField] private float maxRotation = 12f;   // Поворот крайних карт
-    [SerializeField] private float cardSpacing = 60f;   // Шаг/расстояние между картами
+    [SerializeField] private float cardSpacing = 100f;  // Шаг/расстояние между картами
 
     public static CardFanLayout Instance { get; private set; }
 
@@ -30,7 +30,7 @@ public class CardFanLayout : MonoBehaviour
 
         // Если карт 3 или меньше — они просто становятся в ровный горизонтальный ряд
         bool isStraightRow = count <= 3;
-        float rowSpacing = Mathf.Max(cardSpacing, 110f);
+        float rowSpacing = Mathf.Max(cardSpacing, 160f);
 
         for (int i = 0; i < count; i++)
         {
