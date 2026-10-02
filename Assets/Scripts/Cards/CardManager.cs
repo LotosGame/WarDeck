@@ -494,39 +494,39 @@ public class CardManager : MonoBehaviour
         if (cName.Contains("Лучник"))
         {
             unit.SetupUnit(UnitType.Archer, "Лучники", 7, 2, 2, 2, new Color(0.65f, 1f, 0.75f, 1f), customSprite);
-            spawnedUnitObj.transform.localScale = new Vector3(0.3f, 0.25f, 1f);
+            spawnedUnitObj.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
         }
         else if (cName.Contains("Конниц"))
         {
             unit.SetupUnit(UnitType.Cavalry, "Конница", 12, 4, 1, 3, new Color(1f, 0.88f, 0.55f, 1f), customSprite);
-            spawnedUnitObj.transform.localScale = new Vector3(0.33f, 0.28f, 1f);
+            spawnedUnitObj.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
         }
         else if (cName.Contains("Копейщ"))
         {
             unit.SetupUnit(UnitType.Spearmen, "Копейщики", 12, 3, 1, 2, new Color(0.75f, 0.8f, 1f, 1f), customSprite);
-            spawnedUnitObj.transform.localScale = new Vector3(0.3f, 0.25f, 1f);
+            spawnedUnitObj.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
         }
         else if (cName.Contains("Катапульт"))
         {
             unit.SetupUnit(UnitType.Catapult, "Катапульта", 8, 6, 3, 1, new Color(0.85f, 0.7f, 0.55f, 1f), customSprite);
-            spawnedUnitObj.transform.localScale = new Vector3(0.36f, 0.3f, 1f);
+            spawnedUnitObj.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
         }
         else if (cName.Contains("Монах"))
         {
             unit.SetupUnit(UnitType.Monk, "Монах", 8, 1, 1, 2, new Color(0.6f, 0.95f, 1f, 1f), customSprite);
-            spawnedUnitObj.transform.localScale = new Vector3(0.28f, 0.24f, 1f);
+            spawnedUnitObj.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
         }
         else if (cName.Contains("Башн"))
         {
             // Башня: стационарное оборонительное сооружение (moveDistance = 0!)
             unit.SetupUnit(UnitType.Tower, "Башня", 15, 3, 2, 0, new Color(0.85f, 0.85f, 0.95f, 1f), customSprite);
-            spawnedUnitObj.transform.localScale = new Vector3(0.35f, 0.38f, 1f);
+            spawnedUnitObj.transform.localScale = new Vector3(0.75f, 0.75f, 1f);
         }
         else
         {
             // По умолчанию — Воины
             unit.SetupUnit(UnitType.Warrior, "Воины", 10, 3, 1, 2, Color.white, customSprite);
-            spawnedUnitObj.transform.localScale = new Vector3(0.3f, 0.25f, 1f);
+            spawnedUnitObj.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
         }
 
         Debug.Log($"<color=cyan>[CardManager]</color> Карта '{cardData.cardName}' сыграна! Размещен {unit.unitName} (HP: {unit.maxHealth}, Атака: {unit.attackPower}, Ход: {unit.moveDistance}) на клетку {cellPos}.");

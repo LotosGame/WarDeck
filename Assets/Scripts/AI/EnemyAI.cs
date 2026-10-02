@@ -256,7 +256,7 @@ public class EnemyAI : MonoBehaviour
 
         GameObject spawned = Instantiate(prefab, worldPos, Quaternion.identity);
         spawned.name = $"EnemyWarrior_{cellPos.x}_{cellPos.y}";
-        spawned.transform.localScale = new Vector3(0.3f, 0.25f, 1f);
+        spawned.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
 
         Unit unit = spawned.GetComponent<Unit>();
         if (unit == null)
@@ -344,7 +344,8 @@ public class EnemyAI : MonoBehaviour
                 targetWorld.z = 0;
 
                 unit.MoveTo(targetWorld, targetCell);
-                yield return new WaitForSeconds(0.6f);
+                while (unit != null && unit.isMoving) yield return null;
+                yield return new WaitForSeconds(0.2f);
 
                 // 4. После перемещения проверяем, можем ли атаковать цель
                 TargetCandidate postMoveTarget = FindAdjacentTarget(unit);

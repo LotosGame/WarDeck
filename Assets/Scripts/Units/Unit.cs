@@ -298,6 +298,14 @@ public class Unit : MonoBehaviour
         }
     }
 
+    [Header("Movement Animation")]
+    [Tooltip("Высота прыжка/подъема над клеткой во время шага")]
+    public float hopHeight = 0.25f;
+    [Tooltip("Длительность одного шага по клетке (в секундах)")]
+    public float stepDuration = 0.22f;
+
+    [HideInInspector] public bool isMoving = false;
+
     public void MoveTo(Vector3 targetWorldPosition, Vector3Int targetGridPosition)
     {
         if (moveDistance <= 0)
@@ -306,32 +314,140 @@ public class Unit : MonoBehaviour
             return;
         }
 
+        Vector3Int startGridPos = gridPosition;
         gridPosition = targetGridPosition;
         hasMoved = true;
         SetDimmed(true);
 
-        Vector3 targetPos = targetWorldPosition;
-        if (GridManager.Instance != null)
-        {
-            Vector3 center = GridManager.Instance.GetCellCenterWorld(targetGridPosition);
-            targetPos = new Vector3(center.x, center.y + visualYOffset, 0f);
-        }
-        else
-        {
-            targetPos.y += visualYOffset;
-        }
-
-        StartCoroutine(AnimateMove(targetPos));
+        List<Vector3Int> path = CalculatePath(startGridPos, targetGridPosition);
+        StartCoroutine(AnimateStepByStepMove(path, targetWorldPosition));
     }
 
-    private IEnumerator AnimateMove(Vector3 targetPos)
+    private List<Vector3Int> CalculatePath(Vector3Int start, Vector3Int target)
     {
-        while (Vector3.Distance(transform.position, targetPos) > 0.01f)
+        List<Vector3Int> path = new List<Vector3Int>();
+        if (start == target)
         {
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
-            yield return null;
+            path.Add(target);
+            return path;
         }
-        transform.position = targetPos;
+
+        Queue<Vector3Int> queue = new Queue<Vector3Int>();
+        Dictionary<Vector3Int, Vector3Int> cameFrom = new Dictionary<Vector3Int, Vector3Int>();
+
+        queue.Enqueue(start);
+        cameFrom[start] = start;
+
+        Vector3Int[] directions = new Vector3Int[]
+        {
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(-1, 0, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, -1, 0)
+        };
+
+        bool found = false;
+        while (queue.Count > 0)
+        {
+            Vector3Int current = queue.Dequeue();
+            if (current == target)
+            {
+                found = true;
+                break;
+            }
+
+            foreach (var dir in directions)
+            {
+                Vector3Int next = current + dir;
+                if (!cameFrom.ContainsKey(next))
+                {
+                    bool validTile = GridManager.Instance == null || GridManager.Instance.HasTile(next);
+                    bool passable = (next == target) || (GridManager.Instance == null || !GridManager.Instance.IsCellOccupied(next));
+
+                    if (validTile && passable)
+                    {
+                        cameFrom[next] = current;
+                        queue.Enqueue(next);
+                    }
+                }
+            }
+        }
+
+        if (found)
+        {
+            Vector3Int step = target;
+            while (step != start)
+            {
+                path.Add(step);
+                step = cameFrom[step];
+            }
+            path.Reverse();
+            return path;
+        }
+
+        Vector3Int curr = start;
+        while (curr != target)
+        {
+            int dx = target.x - curr.x;
+            int dy = target.y - curr.y;
+            if (Mathf.Abs(dx) >= Mathf.Abs(dy) && dx != 0)
+            {
+                curr += new Vector3Int((int)Mathf.Sign(dx), 0, 0);
+            }
+            else if (dy != 0)
+            {
+                curr += new Vector3Int(0, (int)Mathf.Sign(dy), 0);
+            }
+            path.Add(curr);
+        }
+        return path;
+    }
+
+    private IEnumerator AnimateStepByStepMove(List<Vector3Int> path, Vector3 finalTargetWorld)
+    {
+        isMoving = true;
+
+        for (int i = 0; i < path.Count; i++)
+        {
+            Vector3Int stepCell = path[i];
+            Vector3 startPos = transform.position;
+            Vector3 targetPos;
+
+            if (GridManager.Instance != null)
+            {
+                Vector3 center = GridManager.Instance.GetCellCenterWorld(stepCell);
+                targetPos = new Vector3(center.x, center.y + visualYOffset, 0f);
+            }
+            else
+            {
+                targetPos = finalTargetWorld;
+                targetPos.y += visualYOffset;
+            }
+
+            // Поворачиваем спрайт лицом в направлении движения
+            if (spriteRenderer != null && Mathf.Abs(targetPos.x - startPos.x) > 0.02f)
+            {
+                spriteRenderer.flipX = targetPos.x < startPos.x;
+            }
+
+            float elapsed = 0f;
+            while (elapsed < stepDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / stepDuration);
+
+                Vector3 basePos = Vector3.Lerp(startPos, targetPos, t);
+                // Дуга прыжка (подъем и опускание на каждой клетке)
+                float currentHop = Mathf.Sin(t * Mathf.PI) * hopHeight;
+
+                transform.position = new Vector3(basePos.x, basePos.y + currentHop, basePos.z);
+                yield return null;
+            }
+
+            transform.position = targetPos;
+        }
+
+        isMoving = false;
     }
 
     public void ResetTurn()

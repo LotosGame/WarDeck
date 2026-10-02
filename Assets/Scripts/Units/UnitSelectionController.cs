@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -78,6 +78,9 @@ public class UnitSelectionController : MonoBehaviour
         {
             clickedUnit = GridManager.Instance.GetUnitAt(targetCellPos);
         }
+
+        if (selectedUnit != null && selectedUnit.isMoving) return;
+        if (clickedUnit != null && clickedUnit.isMoving) return;
 
         // СЛУЧАЙ 1: Юнит еще не выбран
         if (selectedUnit == null)
