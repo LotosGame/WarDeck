@@ -123,8 +123,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1200
-        height: 1500
+        width: 89
+        height: 157
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,10 +143,10 @@ TextureImporter:
       name: warrior_army_red_1
       rect:
         serializedVersion: 2
-        x: 801
-        y: 261
-        width: 356
-        height: 866
+        x: 0
+        y: 0
+        width: 89
+        height: 157
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,3 +182,5 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+
+

@@ -123,8 +123,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 150
-        height: 190
+        width: 131
+        height: 132
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,10 +143,10 @@ TextureImporter:
       name: catapult_army_blue_1
       rect:
         serializedVersion: 2
-        x: 130
-        y: 6
-        width: 20
-        height: 116
+        x: 0
+        y: 0
+        width: 131
+        height: 132
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,3 +182,5 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+
+

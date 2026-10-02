@@ -122,9 +122,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 165
-        width: 32
-        height: 17
+        y: 0
+        width: 69
+        height: 158
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,10 +143,10 @@ TextureImporter:
       name: archer_large_blue_1
       rect:
         serializedVersion: 2
-        x: 9
-        y: 1
-        width: 131
-        height: 181
+        x: 0
+        y: 0
+        width: 69
+        height: 158
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -182,3 +182,5 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+
+
