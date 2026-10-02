@@ -20,4 +20,4 @@ MonoBehaviour:
   backgroundColor: {r: 0.5, g: 0.35, b: 0.5, a: 1}
   iconTint: {r: 1, g: 1, b: 1, a: 1}
   unitPrefab: {fileID: 6920986607861126372, guid: 5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e, type: 3}
-  unitSprite: {fileID: 0}
+  unitSprite: {fileID: -4028508739458824857, guid: 15fc934fbc206cb47b8249ec53e60eaf, type: 3}
