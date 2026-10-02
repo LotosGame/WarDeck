@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 using TMPro;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [Header("UI References")]
     [SerializeField] private Image backgroundImage;
@@ -248,6 +248,12 @@ public class CardUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHa
         {
             CardFanLayout.Instance.UpdateFanLayout();
         }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (isDragging) return;
+        OnCardClick();
     }
 
     public void OnCardClick()

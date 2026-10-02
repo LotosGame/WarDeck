@@ -168,19 +168,30 @@ public class CardChoiceUI : MonoBehaviour
             };
         }
 
+        // Убеждаемся, что на карте есть кликабельный Button
+        Button cardBtn = cardObj.GetComponent<Button>();
+        if (cardBtn == null)
+            cardBtn = cardObj.AddComponent<Button>();
+        cardBtn.interactable = true;
+        cardBtn.onClick.RemoveAllListeners();
+        cardBtn.onClick.AddListener(() => OnCardPicked(targetCard, otherCard));
+
         // Также добавляем кнопку «ВЗЯТЬ» под картой
         GameObject btnObj = new GameObject("PickButton");
         btnObj.transform.SetParent(cardObj.transform, false);
         RectTransform btnRt = btnObj.AddComponent<RectTransform>();
-        btnRt.anchorMin = new Vector2(0.5f, -0.15f);
-        btnRt.anchorMax = new Vector2(0.5f, -0.15f);
+        btnRt.anchorMin = new Vector2(0.5f, -0.18f);
+        btnRt.anchorMax = new Vector2(0.5f, -0.18f);
         btnRt.pivot = new Vector2(0.5f, 0.5f);
-        btnRt.sizeDelta = new Vector2(110, 34);
+        btnRt.sizeDelta = new Vector2(130, 40);
 
         Image btnImg = btnObj.AddComponent<Image>();
-        btnImg.color = new Color(0.2f, 0.7f, 0.3f, 1f); // Зеленая кнопка
+        btnImg.color = new Color(0.2f, 0.75f, 0.3f, 1f); // Яркая зеленая кнопка
+        btnImg.raycastTarget = true;
 
         Button btn = btnObj.AddComponent<Button>();
+        btn.interactable = true;
+        btn.targetGraphic = btnImg;
         btn.onClick.AddListener(() => OnCardPicked(targetCard, otherCard));
 
         GameObject btnTextObj = new GameObject("Text");
@@ -192,10 +203,11 @@ public class CardChoiceUI : MonoBehaviour
         textRt.offsetMax = Vector2.zero;
 
         TextMeshProUGUI btnText = btnTextObj.AddComponent<TextMeshProUGUI>();
+        btnText.raycastTarget = false; // Текст не должен блокировать клик по кнопке
         if (titleText != null && titleText.font != null) btnText.font = titleText.font;
         else btnText.font = CyrillicFontRuntimeFallback.GetCyrillicFont();
         btnText.text = "ВЗЯТЬ";
-        btnText.fontSize = 14;
+        btnText.fontSize = 16;
         btnText.fontStyle = FontStyles.Bold;
         btnText.alignment = TextAlignmentOptions.Center;
         btnText.color = Color.white;
