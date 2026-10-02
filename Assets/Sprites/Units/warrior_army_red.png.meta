@@ -121,10 +121,10 @@ TextureImporter:
       name: warrior_army_red_0
       rect:
         serializedVersion: 2
-        x: 44
-        y: 60
-        width: 763
-        height: 1251
+        x: 0
+        y: 0
+        width: 1200
+        height: 1500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

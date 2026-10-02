@@ -118,10 +118,10 @@ TextureImporter:
       name: cavalry_army_blue_0
       rect:
         serializedVersion: 2
-        x: 1
-        y: 1
-        width: 158
-        height: 201
+        x: 0
+        y: 0
+        width: 160
+        height: 202
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
